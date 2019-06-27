@@ -6,13 +6,10 @@ import 'dart:convert';
 const request = "https://api.hgbrasil.com/finance?format-json&key-5cec1b68";
 
 void main() async {
-  print(await getData());
 
-  runApp(MaterialApp(home: Home(),
-  theme: ThemeData(
-    hintColor: Colors.white,
-    primaryColor: Colors.blue
-  ),
+  runApp(MaterialApp(
+    home: Home(),
+    theme: ThemeData(hintColor: Colors.white, primaryColor: Colors.blue),
   ));
 }
 
@@ -34,26 +31,48 @@ class _HomeState extends State<Home> {
   double dolar;
   double bitcoin;
 
-  void _realChangend(String text){
-
+  void _realChangend(String text) {
+    if (text.isEmpty) {
+      _clearAll();
+      return;
+    }
+    double real = double.parse(text);
+    dolarController.text = (real / dolar).toStringAsFixed(2);
+    bitcointController.text = (real / bitcoin).toStringAsFixed(2);
   }
 
-  void _dolarChangend(String text){
-
+  void _dolarChangend(String text) {
+    if (text.isEmpty) {
+      _clearAll();
+      return;
+    }
+    double dolar = double.parse(text);
+    realController.text = (dolar * this.dolar).toStringAsFixed(2);
+    bitcointController.text = (dolar * this.dolar / bitcoin).toStringAsFixed(2);
   }
 
-  void _bitcointChangend(String text){
-
+  void _bitcointChangend(String text) {
+    if (text.isEmpty) {
+      _clearAll();
+      return;
+    }
+    double bitcoin = double.parse(text);
+    realController.text = (bitcoin * this.bitcoin).toStringAsFixed(2);
+    dolarController.text = (bitcoin * this.bitcoin / dolar).toStringAsFixed(2);
   }
 
-
+  void _clearAll() {
+    realController.text = "";
+    dolarController.text = "";
+    bitcointController.text = "";
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.deepPurple,
         appBar: AppBar(
-          title: Text("\$ Conversor \$"),
+          title: Text("Conversor Bitcoin"),
           backgroundColor: Colors.black12,
           centerTitle: true,
         ),
@@ -74,7 +93,7 @@ class _HomeState extends State<Home> {
                     ),
                   );
                 default:
-                  if(snapshot.hasError){
+                  if (snapshot.hasError) {
                     return Center(
                       child: Text(
                         "Erro ao carregar dados",
@@ -85,22 +104,29 @@ class _HomeState extends State<Home> {
                         textAlign: TextAlign.center,
                       ),
                     );
-                  }else {
-                    dolar = snapshot.data["results"]["currencies"]["USD"]["buy"];
-                    bitcoin = snapshot.data["results"]["currencies"]["BTC"]["buy"];
+                  } else {
+                    dolar =
+                        snapshot.data["results"]["currencies"]["USD"]["buy"];
+                    bitcoin =
+                        snapshot.data["results"]["currencies"]["BTC"]["buy"];
                     return SingleChildScrollView(
                       padding: EdgeInsets.all(10.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
-                          Icon(Icons.monetization_on, size: 150.0, color: Colors.white,),
-
-                          buildTextField("Real", "R\$", realController, _realChangend),
+                          Icon(
+                            Icons.monetization_on,
+                            size: 150.0,
+                            color: Colors.white,
+                          ),
+                          buildTextField("Bitcoin", "ß", bitcointController,
+                              _bitcointChangend),
                           Divider(),
-                          buildTextField("Dolar", "\$", dolarController, _dolarChangend),
+                          buildTextField(
+                              "Dolar", "\$", dolarController, _dolarChangend),
                           Divider(),
-                          buildTextField("Bitcoin", "ß", bitcointController, _bitcointChangend),
-
+                          buildTextField(
+                              "Real", "R\$", realController, _realChangend),
                         ],
                       ),
                     );
@@ -110,20 +136,17 @@ class _HomeState extends State<Home> {
   }
 }
 
-
-Widget buildTextField(String label, String prefix, TextEditingController c, Function f){
+Widget buildTextField(
+    String label, String prefix, TextEditingController c, Function f) {
   return TextField(
     controller: c,
     decoration: InputDecoration(
-        labelText: label, labelStyle: TextStyle(color: Colors.white),
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white),
         border: OutlineInputBorder(),
-        prefixText: prefix
-    ),
-    style: TextStyle(
-        color: Colors.white,
-        fontSize: 25.0
-    ),
+        prefixText: prefix),
+    style: TextStyle(color: Colors.white, fontSize: 25.0),
     onChanged: f,
-    keyboardType: TextInputType.number,
+    keyboardType: TextInputType.numberWithOptions(signed: true, decimal: true),
   );
 }
